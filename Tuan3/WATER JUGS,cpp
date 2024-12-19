@@ -1,0 +1,69 @@
+#include <iostream>
+#include <queue>
+#include <set>
+#include <utility>
+
+using namespace std;
+
+struct State {
+    int x, y, steps;
+    State(int x, int y, int steps) : x(x), y(y), steps(steps) {}
+};
+
+bool isValid(int a, int b, int c) {
+    return c <= max(a, b) && c % __gcd(a, b) == 0;
+}
+
+int solve(int a, int b, int c) {
+    if (!isValid(a, b, c)) {
+        return -1;
+    }
+    
+    queue<State> q;
+    set<pair<int, int>> visited;
+
+    q.push(State(0, 0, 0)); // Initial state (0, 0)
+    visited.insert({0, 0});
+
+    while (!q.empty()) {
+        State current = q.front();
+        q.pop();
+
+        int x = current.x;
+        int y = current.y;
+        int steps = current.steps;
+
+        if (x == c || y == c) {
+            return steps;
+        }
+
+        // Possible operations
+        vector<pair<int, int>> nextStates = {
+            {a, y}, // Fill jug 1
+            {x, b}, // Fill jug 2
+            {0, y}, // Empty jug 1
+            {x, 0}, // Empty jug 2
+            {x - min(x, b - y), y + min(x, b - y)}, // Pour jug 1 into jug 2
+            {x + min(y, a - x), y - min(y, a - x)}  // Pour jug 2 into jug 1
+        };
+
+        for (auto state : nextStates) {
+            if (visited.find(state) == visited.end()) {
+                visited.insert(state);
+                q.push(State(state.first, state.second, steps + 1));
+            }
+        }
+    }
+
+    return -1;
+}
+
+int main() {
+    int a, b, c;
+    cin >> a >> b >> c;
+    
+    int result = solve(a, b, c);
+    cout << result << endl;
+    
+    return 0;
+}
